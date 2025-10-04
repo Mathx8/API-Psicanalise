@@ -1,84 +1,100 @@
-from database import db
+from config import db
 
-class PacienteModel(db.Model):
+class Paciente(db.Model):
     __tablename__ = 'pacientes'
 
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    senha_bash = db.Column(db.String(100), nullable=False)
-    telefone = db.Column(db.String(20), nullable=False)
+    idade = db.Column(db.Integer, nullable=False)
+    genero = db.Column(db.String(20))
+    telefone = db.Column(db.String(20))
 
     def to_dict(self):
         return {
-            "id": self.id,
-            "nome": self.nome,
-            "email": self.email,
-            "telefone": self.telefone
+            'id': self.id,
+            'nome': self.nome,
+            'idade': self.idade,
+            'genero': self.genero,
+            'telefone': self.telefone
         }
 
-    # --- 🔍 Validação de dados ---
-    @staticmethod
-    def validar_dados(dados):
-        """Valida se todos os campos obrigatórios estão presentes e corretos."""
-        campos_obrigatorios = ['nome', 'email', 'senha_bash', 'telefone']
+# =================== FUNÇÕES DE NEGÓCIO ===================
 
-        for campo in campos_obrigatorios:
-            if campo not in dados or not dados[campo]:
-                return False, f"Campo obrigatório ausente ou vazio: '{campo}'"
+def validar_paciente(dados):
+    erros = []
 
-        # Exemplo de validações simples
-        if "@" not in dados['email']:
-            return False, "E-mail inválido."
+    nome = dados.get('nome')
+    idade = dados.get('idade')
+    genero = dados.get('genero')
+    telefone = dados.get('telefone')
 
-        if len(dados['senha_bash']) < 6:
-            return False, "A senha deve ter pelo menos 6 caracteres."
+    if not nome or len(nome.strip()) < 3:
+        erros.append("O nome deve ter pelo menos 3 caracteres.")
 
-        if not dados['telefone'].isdigit():
-            return False, "O telefone deve conter apenas números."
+    if not isinstance(idade, int) or idade <= 0:
+        erros.append("A idade deve ser um número positivo.")
 
-        return True, "OK"
+    if genero and genero.lower() not in ['masculino', 'feminino', 'outro']:
+        erros.append("O gênero deve ser 'Masculino', 'Feminino' ou 'Outro'.")
 
-    # --- 🔧 Métodos de criação/atualização seguros ---
-    @classmethod
-    def criar(cls, dados):
-        valido, msg = cls.validar_dados(dados)
-        if not valido:
-            return {"mensagem": msg}, 400
+    if telefone and (len(telefone) < 8 or len(telefone) > 15):
+        erros.append("Telefone deve ter entre 8 e 15 dígitos.")
 
-        try:
-            novo = cls(
-                nome=dados['nome'],
-                email=dados['email'],
-                senha_bash=dados['senha_bash'],
-                telefone=dados['telefone']
-            )
-            db.session.add(novo)
-            db.session.commit()
-            return novo.to_dict(), 201
-        except Exception as e:
-            db.session.rollback()
-            return {"mensagem": f"Erro ao salvar no banco de dados: {str(e)}"}, 500
+    return erros
 
-    @classmethod
-    def atualizar(cls, id_paciente, dados):
-        paciente = cls.query.get(id_paciente)
-        if not paciente:
-            return {"mensagem": "Paciente não encontrado"}, 404
 
-        # Atualiza somente campos enviados
-        for campo in ['nome', 'email', 'senha_bash', 'telefone']:
-            if campo in dados and dados[campo]:
-                setattr(paciente, campo, dados[campo])
+def listar_pacientes():
+    pacientes = Paciente.query.all()
+    return [p.to_dict() for p in pacientes], 200
 
-        # Valida novamente após atualização
-        valido, msg = cls.validar_dados(paciente.to_dict() | {"senha_bash": paciente.senha_bash})
-        if not valido:
-            return {"mensagem": msg}, 400
 
-        try:
-            db.session.commit()
-            return paciente.to_dict(), 200
-        except Exception as e:
-            db.session.rollback()
-            return {"mensagem": f"Erro ao atualizar paciente: {str(e)}"}, 500
+def obter_paciente(id):
+    paciente = Paciente.query.get(id)
+    if not paciente:
+        return {'erro': 'Paciente não encontrado'}, 404
+    return paciente.to_dict(), 200
+
+
+def adicionar_paciente(dados):
+    erros = validar_paciente(dados)
+    if erros:
+        return {'erros': erros}, 400
+
+    novo = Paciente(
+        nome=dados['nome'],
+        idade=dados['idade'],
+        genero=dados.get('genero'),
+        telefone=dados.get('telefone')
+    )
+
+    db.session.add(novo)
+    db.session.commit()
+    return {'mensagem': 'Paciente criado com sucesso', 'paciente': novo.to_dict()}, 201
+
+
+def atualizar_paciente(id, dados):
+    paciente = Paciente.query.get(id)
+    if not paciente:
+        return {'erro': 'Paciente não encontrado'}, 404
+
+    paciente.nome = dados.get('nome', paciente.nome)
+    paciente.idade = dados.get('idade', paciente.idade)
+    paciente.genero = dados.get('genero', paciente.genero)
+    paciente.telefone = dados.get('telefone', paciente.telefone)
+
+    erros = validar_paciente(paciente.to_dict())
+    if erros:
+        return {'erros': erros}, 400
+
+    db.session.commit()
+    return {'mensagem': 'Paciente atualizado com sucesso', 'paciente': paciente.to_dict()}, 200
+
+
+def deletar_paciente(id):
+    paciente = Paciente.query.get(id)
+    if not paciente:
+        return {'erro': 'Paciente não encontrado'}, 404
+
+    db.session.delete(paciente)
+    db.session.commit()
+    return {'mensagem': 'Paciente deletado com sucesso'}, 200

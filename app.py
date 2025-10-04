@@ -1,26 +1,24 @@
-from flask import Flask
-from database import db
-from Controller.paciente_routes import paciente_bp
+import sys
+import os
 
-def create_app():
-    app = Flask(__name__)
+# =================== AJUSTE DE PATH PARA IMPORT ===================
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-    # Configuração simples para SQLite local
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///banco.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+from config import app, db
+from controller.router_paciente import paciente_bp
 
-    db.init_app(app)
+# =================== REGISTRAR ROTAS ===================
+app.register_blueprint(paciente_bp)
 
-    # Registro das rotas (Blueprint)
-    app.register_blueprint(paciente_bp, url_prefix="/pacientes")
+# =================== CRIAR TABELAS ===================
+with app.app_context():
+    db.create_all()
+    print(f"Banco de dados criado com sucesso em: {os.path.join(os.getcwd(), 'psicanalise.db')}")
 
-    # Inicializa o banco de dados na primeira execução
-    with app.app_context():
-        db.create_all()
-
-    return app
-
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=True)
+# =================== INICIAR SERVIDOR ===================
+if __name__ == '__main__':
+    app.run(
+        host=app.config['HOST'],
+        port=app.config['PORT'],
+        debug=app.config['DEBUG']
+    )
