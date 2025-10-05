@@ -6,9 +6,11 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from config import app, db
 from controller.router_paciente import paciente_bp
+from controller.router_psicologo import psicologo_bp
 
 # =================== REGISTRAR ROTAS ===================
 app.register_blueprint(paciente_bp)
+app.register_blueprint(psicologo_bp)
 
 # =================== CRIAR TABELAS ===================
 with app.app_context():

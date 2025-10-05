@@ -1,4 +1,5 @@
 from config import db
+import re
 
 class Paciente(db.Model):
     __tablename__ = 'pacientes'
@@ -8,6 +9,8 @@ class Paciente(db.Model):
     idade = db.Column(db.Integer, nullable=False)
     genero = db.Column(db.String(20))
     telefone = db.Column(db.String(20))
+    email = db.Column(db.String(100), nullable=False)
+    senha_bash = db.Column(db.String(100), nullable=False)
 
     def to_dict(self):
         return {
@@ -15,7 +18,9 @@ class Paciente(db.Model):
             'nome': self.nome,
             'idade': self.idade,
             'genero': self.genero,
-            'telefone': self.telefone
+            'telefone': self.telefone,
+            'email': self.email
+            # senha não é retornada por segurança
         }
 
 # =================== FUNÇÕES DE NEGÓCIO ===================
@@ -27,6 +32,8 @@ def validar_paciente(dados):
     idade = dados.get('idade')
     genero = dados.get('genero')
     telefone = dados.get('telefone')
+    email = dados.get('email')
+    senha_bash = dados.get('senha_bash')
 
     if not nome or len(nome.strip()) < 3:
         erros.append("O nome deve ter pelo menos 3 caracteres.")
@@ -39,6 +46,12 @@ def validar_paciente(dados):
 
     if telefone and (len(telefone) < 8 or len(telefone) > 15):
         erros.append("Telefone deve ter entre 8 e 15 dígitos.")
+
+    if not email or not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
+        erros.append('E-mail inválido. Forneça um e-mail válido no formato exemplo@dominio.com')
+
+    if not senha_bash or len(senha_bash) < 6:
+        erros.append("A senha deve ter pelo menos 6 caracteres.")
 
     return erros
 
@@ -64,7 +77,9 @@ def adicionar_paciente(dados):
         nome=dados['nome'],
         idade=dados['idade'],
         genero=dados.get('genero'),
-        telefone=dados.get('telefone')
+        telefone=dados.get('telefone'),
+        email=dados['email'],
+        senha_bash=dados['senha_bash']
     )
 
     db.session.add(novo)
@@ -81,6 +96,8 @@ def atualizar_paciente(id, dados):
     paciente.idade = dados.get('idade', paciente.idade)
     paciente.genero = dados.get('genero', paciente.genero)
     paciente.telefone = dados.get('telefone', paciente.telefone)
+    paciente.email = dados.get('email', paciente.email)
+    paciente.senha_bash = dados.get('senha_bash', paciente.senha_bash)
 
     erros = validar_paciente(paciente.to_dict())
     if erros:
