@@ -5,6 +5,9 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from config import app, db
+
+from Swagger.swagger_config import configure_swagger
+
 from Controller.router_paciente import paciente_bp
 from Controller.router_psicologo import psicologo_bp
 from Controller.router_sala import sala_bp
@@ -12,6 +15,8 @@ from Controller.router_disponibilidade import disponibilidade_bp
 from Controller.router_terapia import terapia_bp
 from Controller.router_laudo import laudo_bp
 
+
+configure_swagger(app)
 # =================== REGISTRAR ROTAS ===================
 app.register_blueprint(paciente_bp)
 app.register_blueprint(psicologo_bp)
