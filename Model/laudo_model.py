@@ -12,7 +12,7 @@ class Laudo(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'id_terapia': self.id_psicologo,
+            'id_terapia': self.id_terapia,
             'texto': self.texto
         }
     
@@ -24,7 +24,7 @@ class Laudo(db.Model):
         texto = dados.get('texto')
 
         if not id_terapia:
-            erros.append('O campo id_psicologo é obrigatório.')
+            erros.append('O campo id_terapia é obrigatório.')
 
         if not texto or len(texto.strip()) < 3:
             erros.append('A descrição deve ter pelo menos 3 caracteres.')

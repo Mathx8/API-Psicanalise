@@ -21,7 +21,7 @@ class Disponibilidade(db.Model):
             'nome_psicologo': self.psicologo.nome if self.psicologo else None,
             'id_sala': self.id_sala,
             'nome_sala': self.sala.nome if self.sala else None,
-            'data': self.data.isoformat() if self.data else None,
+            'data': self.data.strftime('%Y-%m-%d') if self.data else None,
             'horario_inicial': self.horario_inicial.strftime('%H:%M') if self.horario_inicial else None,
             'horario_final': self.horario_final.strftime('%H:%M') if self.horario_final else None
         }
@@ -42,9 +42,9 @@ class Disponibilidade(db.Model):
             erros.append("O campo 'data' é obrigatório.")
         else:
             try:
-                datetime.fromisoformat(data)
+                datetime.strptime(data, "%Y-%m-%d")
             except ValueError:
-                erros.append("Formato de data inválido. Use o formato YYYY-MM-DDTHH:MM:SS.")
+                erros.append("Formato de data inválido. Use o formato YYYY-MM-DD.")
 
         if not horario_inicial or not horario_final:
             erros.append("Horários inicial e final são obrigatórios.")
@@ -80,7 +80,7 @@ class Disponibilidade(db.Model):
         nova = Disponibilidade(
             id_psicologo=dados.get('id_psicologo'),
             id_sala=dados.get('id_sala'),
-            data=datetime.fromisoformat(dados.get('data')),
+            data=datetime.strptime(dados.get('data'), "%Y-%m-%d"),
             horario_inicial=datetime.strptime(dados.get('horario_inicial'), "%H:%M").time(),
             horario_final=datetime.strptime(dados.get('horario_final'), "%H:%M").time()
         )
@@ -100,9 +100,9 @@ class Disponibilidade(db.Model):
 
         if 'data' in dados:
             try:
-                disponibilidade.data = datetime.fromisoformat(dados.get('data'))
+                disponibilidade.data = datetime.strptime(dados.get('data'), "%Y-%m-%d")
             except ValueError:
-                return {'erro': 'Formato de data inválido. Use o formato YYYY-MM-DDTHH:MM:SS'}, 400
+                return {'erro': 'Formato de data inválido. Use o formato YYYY-MM-DD.'}, 400
 
         if 'horario_inicial' in dados:
             try:
@@ -118,7 +118,7 @@ class Disponibilidade(db.Model):
 
         erros = Disponibilidade.validar_disponibilidade({
             'id_psicologo': disponibilidade.id_psicologo,
-            'data': disponibilidade.data.isoformat(),
+            'data': disponibilidade.data.strftime('%Y-%m-%d'),
             'horario_inicial': disponibilidade.horario_inicial.strftime('%H:%M'),
             'horario_final': disponibilidade.horario_final.strftime('%H:%M')
         })

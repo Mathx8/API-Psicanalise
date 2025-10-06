@@ -25,8 +25,8 @@ class Terapia(db.Model):
             'nome_paciente': self.paciente.nome if self.paciente else None,
             'id_sala': self.id_sala,
             'nome_sala': self.sala.nome if self.sala else None,
-            'data': self.data,
-            'duracao': self.duracao,
+            'data': self.data.isoformat(" ", "minutes") if self.data else None,
+            'duracao': self.duracao.strftime("%H:%M") if self.duracao else None,
             'numero_sessao': self.numero_sessao
         }
     
@@ -50,15 +50,15 @@ class Terapia(db.Model):
             erros.append('A data da terapia é obrigatória.')
         else:
             try:
-                datetime.strptime(dados.get('data'), "%Y-%m-%d %H:%M:%S")
+                datetime.strptime(dados.get('data'), "%Y-%m-%d %H:%M")
             except ValueError:
-                erros.append('Formato de data inválido. Use o formato YYYY-MM-DD HH:MM:SS.')
+                erros.append('Formato de data inválido. Use o formato YYYY-MM-DD HH:MM.')
 
         if duracao:
             try:
-                datetime.strptime(duracao, "%H:%M:%S")
+                datetime.strptime(duracao, "%H:%M")
             except ValueError:
-                erros.append('Formato de duração inválido. Use HH:MM:SS.')
+                erros.append('Formato de duração inválido. Use HH:MM.')
 
         if not isinstance(numero_sessao, int) or numero_sessao <= 0:
             erros.append('O número da sessão deve ser um inteiro positivo.')
@@ -88,8 +88,8 @@ class Terapia(db.Model):
             id_psicologo=dados.get('id_psicologo'),
             id_paciente=dados.get('id_paciente'),
             id_sala=dados.get('id_sala'),
-            data=datetime.strptime(dados.get('data'), "%Y-%m-%d %H:%M:%S"),
-            duracao=datetime.strptime(duracao_str, "%H:%M:%S").time() if duracao_str else None,
+            data=datetime.strptime(dados.get('data'), "%Y-%m-%d %H:%M"),
+            duracao=datetime.strptime(duracao_str, "%H:%M").time() if duracao_str else None,
             numero_sessao=dados.get('numero_sessao')
         )
 
@@ -110,11 +110,11 @@ class Terapia(db.Model):
         terapia.id_psicologo = dados.get('id_psicologo', terapia.id_psicologo)
         terapia.id_paciente = dados.get('id_paciente', terapia.id_paciente)
         terapia.id_sala = dados.get('id_sala', terapia.id_sala)
-        terapia.data = datetime.strptime(dados.get('data'), "%Y-%m-%d %H:%M:%S")
+        terapia.data = datetime.strptime(dados.get('data'), "%Y-%m-%d %H:%M")
 
         duracao_str = dados.get('duracao')
         terapia.duracao = (
-            datetime.strptime(duracao_str, "%H:%M:%S").time()
+            datetime.strptime(duracao_str, "%H:%M").time()
             if duracao_str else terapia.duracao
         )
 
