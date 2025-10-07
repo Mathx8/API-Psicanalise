@@ -22,96 +22,95 @@ class Paciente(db.Model):
             'email': self.email
             # senha não é retornada por segurança
         }
+    
+    @staticmethod
+    def validar_paciente(dados):
+        erros = []
 
-# =================== FUNÇÕES DE NEGÓCIO ===================
+        nome = dados.get('nome')
+        idade = dados.get('idade')
+        genero = dados.get('genero')
+        telefone = dados.get('telefone')
+        email = dados.get('email')
+        senha_bash = dados.get('senha_bash')
 
-def validar_paciente(dados):
-    erros = []
+        if not nome or len(nome.strip()) < 3:
+            erros.append("O nome deve ter pelo menos 3 caracteres.")
 
-    nome = dados.get('nome')
-    idade = dados.get('idade')
-    genero = dados.get('genero')
-    telefone = dados.get('telefone')
-    email = dados.get('email')
-    senha_bash = dados.get('senha_bash')
+        if not isinstance(idade, int) or idade <= 0:
+            erros.append("A idade deve ser um número positivo.")
 
-    if not nome or len(nome.strip()) < 3:
-        erros.append("O nome deve ter pelo menos 3 caracteres.")
+        if genero and genero.lower() not in ['masculino', 'feminino', 'outro']:
+            erros.append("O gênero deve ser 'Masculino', 'Feminino' ou 'Outro'.")
 
-    if not isinstance(idade, int) or idade <= 0:
-        erros.append("A idade deve ser um número positivo.")
+        if telefone and (len(telefone) < 8 or len(telefone) > 15):
+            erros.append("Telefone deve ter entre 8 e 15 dígitos.")
 
-    if genero and genero.lower() not in ['masculino', 'feminino', 'outro']:
-        erros.append("O gênero deve ser 'Masculino', 'Feminino' ou 'Outro'.")
+        if not email or not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
+            erros.append('E-mail inválido. Forneça um e-mail válido no formato exemplo@dominio.com')
 
-    if telefone and (len(telefone) < 8 or len(telefone) > 15):
-        erros.append("Telefone deve ter entre 8 e 15 dígitos.")
+        if not senha_bash or len(senha_bash) < 6:
+            erros.append("A senha deve ter pelo menos 6 caracteres.")
 
-    if not email or not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
-        erros.append('E-mail inválido. Forneça um e-mail válido no formato exemplo@dominio.com')
+        return erros
+    
+    @staticmethod
+    def listar_pacientes():
+        pacientes = Paciente.query.all()
+        return [p.to_dict() for p in pacientes], 200
+    
+    @staticmethod
+    def obter_paciente(id):
+        paciente = Paciente.query.get(id)
+        if not paciente:
+            return {'erro': 'Paciente não encontrado'}, 404
+        return paciente.to_dict(), 200
+    
+    @staticmethod
+    def adicionar_paciente(dados):
+        erros = Paciente.validar_paciente(dados)
+        if erros:
+            return {'erros': erros}, 400
 
-    if not senha_bash or len(senha_bash) < 6:
-        erros.append("A senha deve ter pelo menos 6 caracteres.")
+        novo = Paciente(
+            nome=dados['nome'],
+            idade=dados['idade'],
+            genero=dados.get('genero'),
+            telefone=dados.get('telefone'),
+            email=dados['email'],
+            senha_bash=dados['senha_bash']
+        )
 
-    return erros
+        db.session.add(novo)
+        db.session.commit()
+        return {'mensagem': 'Paciente criado com sucesso', 'paciente': novo.to_dict()}, 201
+    
+    @staticmethod
+    def atualizar_paciente(id, dados):
+        paciente = Paciente.query.get(id)
+        if not paciente:
+            return {'erro': 'Paciente não encontrado'}, 404
 
+        paciente.nome = dados.get('nome', paciente.nome)
+        paciente.idade = dados.get('idade', paciente.idade)
+        paciente.genero = dados.get('genero', paciente.genero)
+        paciente.telefone = dados.get('telefone', paciente.telefone)
+        paciente.email = dados.get('email', paciente.email)
+        paciente.senha_bash = dados.get('senha_bash', paciente.senha_bash)
 
-def listar_pacientes():
-    pacientes = Paciente.query.all()
-    return [p.to_dict() for p in pacientes], 200
+        erros = Paciente.validar_paciente(paciente.to_dict())
+        if erros:
+            return {'erros': erros}, 400
 
+        db.session.commit()
+        return {'mensagem': 'Paciente atualizado com sucesso', 'paciente': paciente.to_dict()}, 200
+    
+    @staticmethod
+    def deletar_paciente(id):
+        paciente = Paciente.query.get(id)
+        if not paciente:
+            return {'erro': 'Paciente não encontrado'}, 404
 
-def obter_paciente(id):
-    paciente = Paciente.query.get(id)
-    if not paciente:
-        return {'erro': 'Paciente não encontrado'}, 404
-    return paciente.to_dict(), 200
-
-
-def adicionar_paciente(dados):
-    erros = validar_paciente(dados)
-    if erros:
-        return {'erros': erros}, 400
-
-    novo = Paciente(
-        nome=dados['nome'],
-        idade=dados['idade'],
-        genero=dados.get('genero'),
-        telefone=dados.get('telefone'),
-        email=dados['email'],
-        senha_bash=dados['senha_bash']
-    )
-
-    db.session.add(novo)
-    db.session.commit()
-    return {'mensagem': 'Paciente criado com sucesso', 'paciente': novo.to_dict()}, 201
-
-
-def atualizar_paciente(id, dados):
-    paciente = Paciente.query.get(id)
-    if not paciente:
-        return {'erro': 'Paciente não encontrado'}, 404
-
-    paciente.nome = dados.get('nome', paciente.nome)
-    paciente.idade = dados.get('idade', paciente.idade)
-    paciente.genero = dados.get('genero', paciente.genero)
-    paciente.telefone = dados.get('telefone', paciente.telefone)
-    paciente.email = dados.get('email', paciente.email)
-    paciente.senha_bash = dados.get('senha_bash', paciente.senha_bash)
-
-    erros = validar_paciente(paciente.to_dict())
-    if erros:
-        return {'erros': erros}, 400
-
-    db.session.commit()
-    return {'mensagem': 'Paciente atualizado com sucesso', 'paciente': paciente.to_dict()}, 200
-
-
-def deletar_paciente(id):
-    paciente = Paciente.query.get(id)
-    if not paciente:
-        return {'erro': 'Paciente não encontrado'}, 404
-
-    db.session.delete(paciente)
-    db.session.commit()
-    return {'mensagem': 'Paciente deletado com sucesso'}, 200
+        db.session.delete(paciente)
+        db.session.commit()
+        return {'mensagem': 'Paciente deletado com sucesso'}, 200
