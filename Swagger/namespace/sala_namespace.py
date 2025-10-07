@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from Model.sala_model import Sala
+from model.sala_model import Sala
 
 sala_ns = Namespace("Sala", description="Operações relacionadas às salas")
 

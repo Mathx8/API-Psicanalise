@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from Model.laudo_model import Laudo
+from model.laudo_model import Laudo
 
 laudo_bp = Blueprint('laudo_bp', __name__)
 

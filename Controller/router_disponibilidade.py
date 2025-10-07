@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from Model.disponibilidade_model import Disponibilidade
+from model.disponibilidade_model import Disponibilidade
 
 disponibilidade_bp = Blueprint('disponibilidade_bp', __name__)
 
