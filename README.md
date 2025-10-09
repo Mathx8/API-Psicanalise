@@ -1,8 +1,8 @@
 ## 🧠 Clínica de Psicologia - API RESTful
 
-Esta API proporciona os principais recursos para o gerenciamento interno de uma clínica de psicologia, tais como cadastro de pacientes, psicólogos, salas, sessões de terapia, laudos e disponibilidades. Toda a documentação é automaticamente gerada pelo Swagger, via Flask-RESTX.
+Esta API oferece os principais recursos para o gerenciamento interno de uma clínica de psicologia, incluindo o cadastro de pacientes, psicólogos (e suas disponibilidades), salas, sessões de terapiae laudos. A documentação é automaticamente gerada pelo Swagger através do Flask-RESTX.
 
-*diagrama aqui*
+![Diagrama](DiagramaPsicanalise.png)
 
 ### 🛠 Tecnologias utilizadas
 
@@ -225,6 +225,7 @@ http://localhost:5000/
 ├── app.py
 ├── config.py
 ├── database.py
+├── DiagramaPsicanalise.png
 ├── psicanalise.db
 └── requirements.txt
 ```
