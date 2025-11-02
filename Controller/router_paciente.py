@@ -29,3 +29,25 @@ def rota_atualizar_paciente(id):
 def rota_deletar_paciente(id):
     response, status = Paciente.deletar_paciente(id)
     return jsonify(response), status
+
+@paciente_bp.route('/login/paciente', methods=['POST'])
+def login_paciente():
+    dados = request.get_json()
+    email = dados.get("email")
+    senha = dados.get("senha")
+
+    if not email or not senha:
+        return jsonify({"erro": "Email e senha são obrigatórios"}), 400
+
+    paciente = Paciente.query.filter_by(email=email).first()
+
+    if not paciente:
+        return jsonify({"erro": "Paciente não encontrado"}), 404
+
+    if paciente.senha != senha:
+        return jsonify({"erro": "Senha incorreta"}), 401
+
+    return jsonify({
+        "mensagem": "Login bem-sucedido",
+        "paciente": paciente.to_dict()
+    }), 200

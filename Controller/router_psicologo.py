@@ -36,3 +36,27 @@ def rota_atualizar_psicologo(id):
 def rota_deletar_psicologo(id):
     response, status = Psicologo.deletar_psicologo(id)
     return jsonify(response), status
+
+@psicologo_bp.route('/login/psicologo', methods=['POST'])
+def login_psicologo():
+    dados = request.json
+    login = dados.get("login")
+    senha = dados.get("senha")
+
+    if not login or not senha:
+        return jsonify({"erro": "Email/CRP e senha são obrigatórios"}), 400
+
+    psicologo = Psicologo.query.filter(
+        (Psicologo.email == login) | (Psicologo.crp == login)
+    ).first()
+
+    if not psicologo:
+        return jsonify({"erro": "Usuário não encontrado"}), 404
+
+    if psicologo.senha_bash != senha:
+        return jsonify({"erro": "Senha incorreta"}), 401
+
+    return jsonify({
+        "mensagem": "Login bem-sucedido",
+        "psicologo": psicologo.to_dict()
+    }), 200
