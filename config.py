@@ -1,8 +1,13 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS  # ⬅️ Import necessário
 
 app = Flask(__name__)
+
+# =================== CONFIG CORS ===================
+# Permite acesso de qualquer origem
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # =================== CAMINHO ABSOLUTO DO BANCO ===================
 db_path = os.path.join(os.getcwd(), 'psicanalise.db')
