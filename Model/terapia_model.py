@@ -166,3 +166,17 @@ class Terapia(db.Model):
 
         terapias = query.all()
         return [terapia.to_dict() for terapia in terapias], 200
+    
+    @staticmethod
+    def listar_pacientes_por_psicologo(id_psicologo):
+        terapias = Terapia.query.filter_by(id_psicologo=id_psicologo).all()
+
+        if not terapias:
+            return {'erro': 'Nenhum paciente encontrado para este psicólogo'}, 404
+
+        pacientes_unicos = {}
+        for t in terapias:
+            if t.paciente and t.paciente.id not in pacientes_unicos:
+                pacientes_unicos[t.paciente.id] = t.paciente.to_dict()
+
+        return list(pacientes_unicos.values()), 200

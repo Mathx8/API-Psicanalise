@@ -8,36 +8,33 @@ app = Flask(__name__)
 CORS(app,
      resources={
          r"/*": {
-             "origins": [
-                 "http://localhost:3000",
-                 "https://labirintomental.vercel.app",  # colocar o link do front depois
-             ],
+             "origins": ["http://localhost:3000"],
              "supports_credentials": True,
-             "allow_headers": ["Content-Type", "Authorization"],
-             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+             "always_send": True
          }
      })
 
 @app.before_request
 def enforce_https():
-    """Garante HTTPS no Render"""
+    """Redirecionamento HTTPS inteligente para o Render"""
     if request.method == "OPTIONS":
         return
+    
     is_https = (
-        request.is_secure or
-        request.headers.get("X-Forwarded-Proto", "https") == "https"
+        request.is_secure or 
+        request.headers.get('X-Forwarded-Proto', 'https') == 'https'
     )
-    if not is_https and "localhost" not in request.host:
-        https_url = request.url.replace("http://", "https://", 1)
+    if not is_https and 'localhost' not in request.host:
+        https_url = request.url.replace('http://', 'https://', 1)
         return redirect(https_url, code=301)
-
+    
 @app.after_request
 def add_cors_headers(response):
-    """Adiciona headers CORS universais"""
-    response.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
+    """Garante headers CORS em todas as respostas"""
+    if request.method == "OPTIONS":
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Max-Age'] = '600'
     return response
 
 # =================== CAMINHO ABSOLUTO DO BANCO ===================

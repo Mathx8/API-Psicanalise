@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from Model.psicologo_model import Psicologo
+from Model.terapia_model import Terapia
 
 psicologo_bp = Blueprint('psicologo_bp', __name__)
 
@@ -60,3 +61,9 @@ def login_psicologo():
         "mensagem": "Login bem-sucedido",
         "psicologo": psicologo.to_dict()
     }), 200
+
+@psicologo_bp.route('/psicologos/<int:id_psicologo>/pacientes', methods=['GET'])
+def rota_listar_pacientes_por_psicologo(id_psicologo):
+    """Listar todos os pacientes atendidos por um psicólogo"""
+    response, status = Terapia.listar_pacientes_por_psicologo(id_psicologo)
+    return jsonify(response), status
