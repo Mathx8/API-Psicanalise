@@ -5,24 +5,48 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
+<<<<<<< HEAD
 # ✅ Habilita CORS para todas as origens (localhost e produção)
 CORS(app, supports_credentials=True)
+=======
+CORS(app,
+     resources={
+         r"/*": {
+             "origins": ["http://localhost:3000"],
+             "supports_credentials": True,
+             "always_send": True
+         }
+     })
+>>>>>>> 8dece248069e1e62fbffb0de3801537a222378ef
 
 @app.before_request
 def enforce_https():
-    """Garante HTTPS no Render"""
+    """Redirecionamento HTTPS inteligente para o Render"""
     if request.method == "OPTIONS":
         return
+    
     is_https = (
-        request.is_secure or
-        request.headers.get("X-Forwarded-Proto", "https") == "https"
+        request.is_secure or 
+        request.headers.get('X-Forwarded-Proto', 'https') == 'https'
     )
-    if not is_https and "localhost" not in request.host:
-        https_url = request.url.replace("http://", "https://", 1)
+    if not is_https and 'localhost' not in request.host:
+        https_url = request.url.replace('http://', 'https://', 1)
         return redirect(https_url, code=301)
+<<<<<<< HEAD
 
 # ⚠️ REMOVA o @app.after_request que adiciona headers CORS manualmente!
 # Ele conflita com o flask_cors e faz o navegador rejeitar a resposta.
+=======
+    
+@app.after_request
+def add_cors_headers(response):
+    """Garante headers CORS em todas as respostas"""
+    if request.method == "OPTIONS":
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Max-Age'] = '600'
+    return response
+>>>>>>> 8dece248069e1e62fbffb0de3801537a222378ef
 
 # =================== CAMINHO ABSOLUTO DO BANCO ===================
 db_path = os.path.join(os.getcwd(), "psicanalise.db")
