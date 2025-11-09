@@ -1,7 +1,5 @@
 from flask import Blueprint, jsonify, request
-from werkzeug.security import generate_password_hash, check_password_hash
 from Model.paciente_model import Paciente
-from config import db
 
 paciente_bp = Blueprint('paciente_bp', __name__)
 
@@ -25,11 +23,7 @@ def rota_obter_paciente(id):
 def rota_adicionar_paciente():
     try:
         dados = request.get_json()
-
-        # Garante que a senha seja armazenada com hash
-        if 'senha_bash' in dados:
-            dados['senha_bash'] = generate_password_hash(dados['senha_bash'])
-
+        # Nenhum hash — senha é salva diretamente como enviada
         response, status = Paciente.adicionar_paciente(dados)
         return jsonify(response), status
     except Exception as e:
@@ -41,11 +35,7 @@ def rota_adicionar_paciente():
 def rota_atualizar_paciente(id):
     try:
         dados = request.get_json()
-
-        # Atualiza o hash da senha, se enviada
-        if 'senha_bash' in dados:
-            dados['senha_bash'] = generate_password_hash(dados['senha_bash'])
-
+        # Nenhum hash — senha é atualizada diretamente
         response, status = Paciente.atualizar_paciente(id, dados)
         return jsonify(response), status
     except Exception as e:
@@ -76,21 +66,9 @@ def login_paciente():
         if not paciente:
             return jsonify({"erro": "Paciente não encontrado"}), 404
 
-        senha_salva = paciente.senha_bash
-
-        # Verifica se é hash ou texto puro
-        if senha_salva.startswith("pbkdf2:sha256:"):
-            senha_ok = check_password_hash(senha_salva, senha)
-        else:
-            senha_ok = senha_salva == senha
-
-        if not senha_ok:
+        # Comparação direta (sem hash)
+        if paciente.senha_bash != senha:
             return jsonify({"erro": "Senha incorreta"}), 401
-
-        # Atualiza automaticamente para hash se ainda estiver em texto puro
-        if not senha_salva.startswith("pbkdf2:sha256:"):
-            paciente.senha_bash = generate_password_hash(senha)
-            db.session.commit()
 
         return jsonify({
             "mensagem": "Login bem-sucedido",
@@ -99,4 +77,7 @@ def login_paciente():
 
     except Exception as e:
         print("ERRO LOGIN PACIENTE:", str(e))
-        return jsonify({"erro": "Erro interno no servidor", "detalhe": str(e)}), 500
+        return jsonify({
+            "erro": "Erro interno no servidor",
+            "detalhe": str(e)
+        }), 500
