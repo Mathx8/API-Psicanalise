@@ -56,6 +56,8 @@ def rota_deletar_paciente(id):
 def login_paciente():
     try:
         dados = request.get_json()
+        print("🟡 Dados recebidos no login:", dados)  # LOG
+
         email = dados.get("email")
         senha = dados.get("senha")
 
@@ -63,12 +65,18 @@ def login_paciente():
             return jsonify({"erro": "Email e senha são obrigatórios"}), 400
 
         paciente = Paciente.query.filter_by(email=email).first()
+        print("🟢 Paciente encontrado:", paciente.to_dict() if paciente else "Nenhum")  # LOG
+
         if not paciente:
             return jsonify({"erro": "Paciente não encontrado"}), 404
 
-        # Comparação direta (sem hash)
+        print("🔹 Comparando senha:", senha, "com", paciente.senha_bash)  # LOG
+
         if paciente.senha_bash != senha:
+            print("🔴 Senha incorreta!")  # LOG
             return jsonify({"erro": "Senha incorreta"}), 401
+
+        print("✅ Login bem-sucedido!")  # LOG
 
         return jsonify({
             "mensagem": "Login bem-sucedido",
@@ -76,8 +84,9 @@ def login_paciente():
         }), 200
 
     except Exception as e:
-        print("ERRO LOGIN PACIENTE:", str(e))
+        print("🔥 ERRO LOGIN PACIENTE:", str(e))
         return jsonify({
             "erro": "Erro interno no servidor",
             "detalhe": str(e)
         }), 500
+
