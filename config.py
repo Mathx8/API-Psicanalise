@@ -5,9 +5,14 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-# ✅ Configuração CORS limpa e compatível com Flask-CORS
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://labirintomental.vercel.app"]}},
-     supports_credentials=True)
+# 🔥 CORS — Liberar seu site do Render
+CORS(app, resources={r"/*": {
+    "origins": [
+        "http://localhost:3000",
+        "https://labirintomental.vercel.app",
+        "https://clinica-psicologia.onrender.com"
+    ]
+}}, supports_credentials=True)
 
 @app.before_request
 def enforce_https():
@@ -22,10 +27,6 @@ def enforce_https():
     if not is_https and 'localhost' not in request.host:
         https_url = request.url.replace('http://', 'https://', 1)
         return redirect(https_url, code=301)
-
-# ⚠️ REMOVA o after_request de CORS
-# Flask-CORS já cuida automaticamente dos OPTIONS e dos headers
-# Se quiser apenas registrar algo específico, pode, mas sem sobrescrever CORS.
 
 # =================== CAMINHO ABSOLUTO DO BANCO ===================
 db_path = os.path.join(os.getcwd(), "psicanalise.db")
