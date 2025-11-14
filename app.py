@@ -1,10 +1,10 @@
 import sys
 import os
 
-# =================== AJUSTE DE PATH PARA IMPORT ===================
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from config import app, db   # CORS já está configurado no config.py
+from config import app, db  # NÃO colocar CORS aqui!!!
+
 
 from Swagger.swagger_config import configure_swagger
 
