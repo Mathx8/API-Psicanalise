@@ -1,10 +1,10 @@
 import sys
 import os
 
+# =================== AJUSTE DE PATH PARA IMPORT ===================
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from config import app, db  # NÃO colocar CORS aqui!!!
-
+from config import app, db
 
 from Swagger.swagger_config import configure_swagger
 
@@ -15,8 +15,8 @@ from Controller.router_disponibilidade import disponibilidade_bp
 from Controller.router_terapia import terapia_bp
 from Controller.router_laudo import laudo_bp
 
-configure_swagger(app)
 
+configure_swagger(app)
 # =================== REGISTRAR ROTAS ===================
 app.register_blueprint(paciente_bp)
 app.register_blueprint(psicologo_bp)
