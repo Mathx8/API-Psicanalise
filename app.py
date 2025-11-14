@@ -5,6 +5,14 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from config import app, db
+from flask_cors import CORS   # <<< ADICIONE ISSO
+
+# =================== ATIVAR CORS ===================
+CORS(app, resources={r"/*": {"origins": [
+    "https://clinica-psicologia.onrender.com",
+    "http://localhost:3000",
+    "*"
+]}}, supports_credentials=True)
 
 from Swagger.swagger_config import configure_swagger
 
@@ -17,6 +25,7 @@ from Controller.router_laudo import laudo_bp
 
 
 configure_swagger(app)
+
 # =================== REGISTRAR ROTAS ===================
 app.register_blueprint(paciente_bp)
 app.register_blueprint(psicologo_bp)
